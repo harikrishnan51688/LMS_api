@@ -10,7 +10,7 @@ CORS(app)
 
 app.config.from_object(config['default'])
 
-csrf = CSRFProtect(app)
+# csrf = CSRFProtect(app)
 api.init_app(app)
 
 celery = Celery(__name__, broker=config['celery']['CELERY_BROKER'], backend=config['celery']['CELERY_BACKEND'])

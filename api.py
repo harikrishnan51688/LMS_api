@@ -8,15 +8,17 @@ import datetime
 from datetime import timedelta
 from functools import wraps
 import os
-from sqlalchemy import func
+from sqlalchemy.sql import func, desc, not_, or_
 from flask_caching import Cache
 from config import config
+from models import db
+from flask import current_app as app
 
 cache = Cache(config=config['cache'])
 
 secret_key = config['default'].SECRET_KEY
 
-def token_required(f):
+def is_user(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
@@ -95,8 +97,6 @@ class Chart_Sections(Resource):
 
 class UserJoinChart(Resource):
     def get(self):
-        from main import db
-        from sqlalchemy.sql import func, desc
         # Query to get the count of users joined per day
         result = db.session.query(func.date(User.date).label('date'), func.count(User.id).label('count')).group_by(func.date(User.date)).order_by(desc(User.date)).limit(7)
 
@@ -201,7 +201,6 @@ class GetSection_byId(Resource):
 class Create_Section(Resource):
     @is_admin
     def post(current_user, self):
-        from main import db
         name = request.form.get('section_name')
         section = Section(section_name=name)
         try:
@@ -216,7 +215,6 @@ class Create_Section(Resource):
 class Update_Section(Resource):
     @is_admin
     def put(current_user, self, section_id):
-        from main import db
         name = request.form.get('section_name')
         section = Section.query.filter_by(section_id=section_id).first()
         if not section:
@@ -234,7 +232,6 @@ class Update_Section(Resource):
 class Delete_Section_(Resource):
     @is_admin
     def delete(current_user, self, section_id):
-        from main import db
         section = Section.query.filter_by(section_id=section_id).first()
         if not section:
             return jsonify({"message":"section doesn't exists!"})
@@ -254,7 +251,6 @@ class Delete_Section_(Resource):
 class Delete_Ebook(Resource):
     @is_admin
     def delete(current_user,self):
-        from main import db
         book_id = request.args.get('book_id')
         book = Ebook.query.filter_by(id=book_id).first()
         if not book:
@@ -272,7 +268,6 @@ class Delete_Ebook(Resource):
 class Update_Ebook(Resource):
     @is_admin
     def put(current_user,self,book_id):
-        from main import app, db
 
         book = Ebook.query.filter_by(id=book_id).first()
         if not book:
@@ -314,7 +309,6 @@ class Update_Ebook(Resource):
 class Create_Ebook(Resource):
     @is_admin
     def post(current_user, self):
-        from main import app, db
         try:
             book = Ebook(owner_id=current_user.id, author=request.form.get('author'), title=request.form.get('title'), subtitle=request.form.get('subtitle'), pages=request.form.get('pages'), price=request.form.get('price'), genre=request.form.get('genre'))
             # for pdf
@@ -333,6 +327,7 @@ class Create_Ebook(Resource):
 
             db.session.add(book)
             db.session.commit()
+            cache.delete('books')
             return jsonify({"message":"Book added succussfully", 'status': 'success'})
         except:
             return jsonify({"message":"some error occured", 'status': 'error'})
@@ -420,8 +415,6 @@ class CheckAuth(Resource):
         
 class SearchBooks(Resource):
     def get(self):
-        from sqlalchemy import or_
-
         search_pattern = "~"
         keyword = request.args.get('query')
         if keyword:
@@ -461,7 +454,7 @@ class SearchTags(Resource):
         return jsonify({"authors": authors,"genres": genres,"sections": sections})
     
 class IsBorrowed(Resource):
-    @token_required
+    @is_user
     def get(current_user, self):
         book_id = request.args.get('book_id')
         is_borrowed = BorrowBook.query.filter_by(book_id=book_id, user_id=current_user.id).first()
@@ -471,9 +464,8 @@ class IsBorrowed(Resource):
             return jsonify({'isBorrowed': False})
 
 class Profile(Resource):
-    @token_required
+    @is_user
     def get(current_user, self):
-        from main import db
 
         user_id = request.args.get('user_id')
 
@@ -551,9 +543,8 @@ class Profile(Resource):
         return jsonify({'pending_requests': p_dict, 'borrowed_books': b_dict, 'returned_books': r_dict})
 
 class ReqBook(Resource):
-    @token_required
+    @is_user
     def get(current_user, self):
-        from main import db
         book_id = request.args.get("book_id")
         book_exists = Ebook.query.filter_by(id=book_id).first()
         if not(current_user.role_id == 1):
@@ -582,9 +573,8 @@ class ReqBook(Resource):
             return jsonify({'message': 'Admin cannot request for book'})
 
 class RetBook(Resource):
-    @token_required
+    @is_user
     def get(current_user, self):
-        from main import db
         book_id = request.args.get("book_id")
         borrow_id = request.args.get("borrow_id")
         user_id = request.args.get("user_id")
@@ -601,9 +591,8 @@ class RetBook(Resource):
             return jsonify({'message': 'Error occurred during returning book'})
 
 class CancelRequest(Resource):
-    @token_required
+    @is_user
     def delete(current_user, self):
-        from main import db
         request_id = request.args.get("request_id")
         try:
             cancel_request = RequestBook.query.filter_by(request_id=request_id).first()
@@ -633,7 +622,6 @@ class AllUsers(Resource):
     @is_admin
     @cache.cached(key_prefix="users", timeout=60)
     def get(current_user, self):
-        from main import db
         try:
             users = User.query.all()
             result= []
@@ -677,7 +665,6 @@ class BookRequests(Resource):
 class RemoveUser(Resource):
     @is_admin
     def delete(current_user, self):
-        from main import db
         try:
             user_id = request.args.get('user_id')
             user = User.query.filter_by(id=user_id).first_or_404()
@@ -693,7 +680,6 @@ class RemoveUser(Resource):
 class ApproveRequest(Resource):
     @is_admin
     def get(current_user, self):
-        from main import db
         try:
             request_id = request.args.get('request_id')
             requested_book = RequestBook.query.filter_by(request_id=request_id).first()
@@ -707,7 +693,6 @@ class ApproveRequest(Resource):
         
 class BooksNotInSection(Resource):
     def get(self):
-        from sqlalchemy.sql import not_
         try:
             section_id = request.args.get('section_id')
             section = Section.query.filter_by(section_id=section_id).first()
@@ -720,7 +705,6 @@ class BooksNotInSection(Resource):
 class AddBookToSection(Resource):
     @is_admin
     def get(current_user, self):
-        from main import db
         try:
             book_id = request.args.get('book_id')
             section_id = request.args.get('section_id')
@@ -739,7 +723,6 @@ class AddBookToSection(Resource):
 class RemoveBookFromSection(Resource):
     @is_admin
     def delete(current_user, self):
-        from main import db
         try:
             book_id = request.args.get('book_id')
             section_id = request.args.get('section_id')
@@ -757,7 +740,6 @@ class RemoveBookFromSection(Resource):
         
 class CreateAccount(Resource):
     def post(self):
-        from main import db
         data = request.get_json()
 
         try:
