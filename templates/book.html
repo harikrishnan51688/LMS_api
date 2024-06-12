@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_form %}
+{% block content %}
+
+<div class="container mt-5">
+    <h1 class="mb-4">{{book.title}}</h1>
+
+    <div class="row">
+        <div class="col-md-3">
+            <img src="{{ url_for('static', filename=book.image) }}" alt="Book Cover" class="img-fluid">
+        </div>
+        <div class="col-md-6">
+            <h4 class="mb-3">Details</h4>
+            <p><strong>Author:</strong> {{ book.author }}</p>
+            <p><strong>Genre:</strong> {{book.genre}}</p>
+            <p><strong>Published Date:</strong> {{ book.created_at }}</p>
+            <p><strong>Description:</strong> {{ book.subtitle }}</p>
+            <p><strong>Price:</strong> ₹{{ book.price }}</p>
+
+            
+            {% if current_user.is_authenticated %}
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Buy
+              </button>
+              <!-- Modal -->
+              <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="exampleModalLabel">Buy</h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      Purchase this book "{{book.title}}" at ₹{{ book.price }}?
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      <a href="{{ url_for('static', filename=book.file) }}"><button type="button" class="btn btn-primary">Buy it</button></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+
+            {% if not current_user.is_superuser %}
+            {% if is_borrowed %}
+            <a href="https://mozilla.github.io/pdf.js/web/viewer.html?file=http://127.0.0.1:5000/{{ url_for('static', filename=book.file)}}"
+                type="application/pdf" target="_blank">
+                <button class="btn btn-secondary">Read</button>
+            </a>
+            {% else %}
+            <a href="{{ url_for('request_book', book_id=book.id)}}">
+                <button class="btn btn-primary">Request book</button>
+            </a>
+            {% endif %}
+            {% endif %}
+            {% if current_user.is_superuser %}
+            <a href="https://mozilla.github.io/pdf.js/web/viewer.html?file=http://127.0.0.1:5000/{{ url_for('static', filename=book.file)}}"
+                type="application/pdf" target="_blank">
+                <button class="btn btn-secondary">View</button>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <h3>Ratings</h3>
+    {% if ratings %}
+        {% for comment in ratings %}
+            <div class="comment">
+                <div class="comment-header">
+                    <span class="comment-rating">{{ comment.user.name }} (Rating: {{ comment.rating }}/5)</span>
+                    <span class="comment-date">{{ comment.created_at.strftime('%Y-%m-%d') }}</span>
+                </div>
+                <p class="comment-content">{{ comment.comment }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No comments yet.</p>
+    {% endif %}
+
+    {% if current_user.is_authenticated %}
+    {% if not current_user.is_superuser %}
+    <div class="form-comments">
+        <div class="title-box-2">
+            <h5 class="title-left">
+                Write your experience:
+                </h4>
+        </div>
+
+        <form method="POST" , action="">
+            {{ render_form(form) }}
+        </form>
+    </div>
+    {% endif %}
+    {% endif %}
+    {% if borrowed_users %}
+    {% if current_user.is_superuser %}
+    <hr>
+    <h4>Current borrowed users</h4>
+    <div class="col-md-3">
+        <div class="list-group-flush">
+            <ol class="list-group list-group-numbered">
+                {% for user in borrowed_users %}
+                <li class="list-group-item">{{user.name}}</li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+</div>
+<br>
+<br>
+<br>
+{% endblock %}
+
+<!-- <a href="https://mozilla.github.io/pdf.js/web/viewer.html?file=http://127.0.0.1:5000/{{ url_for('static', filename=book.file)}}" type="application/pdf" target="_blank"> -->

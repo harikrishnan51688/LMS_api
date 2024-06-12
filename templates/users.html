@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% include 'sidebar.html' %}
+{% block content %}
+
+    <div class="container mt-5">
+        <h2>User List</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Date joined</th>
+                    <th>Current requests</th>
+                    <th>Borrowed books</th>
+                    <th>Returned books</th>
+                    <th>Is superuser</th>
+                    
+
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                {% set borrow_count = get_borrow_count_by_id(user.id) %}
+                {% set request_count = get_request_count_by_id(user.id) %}
+                {% set return_count = get_return_count_by_id(user.id) %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td> <a href="{{ url_for('user', user_id=user.id) }}"> {{ user.name }}</a></td>
+                    <td><a href="{{ url_for('user', user_id=user.id) }}">{{ user.email }}</a></td>
+                    <td><a href="{{ url_for('user', user_id=user.id) }}">{{ user.date }}</a></td>
+                    <td>{{ request_count }}</td>
+                    <td>{{ borrow_count }}</td>
+                    <td>{{ return_count }}</td>
+                    <td>{{ user.is_superuser }}</td>
+                    {% if not user.is_superuser %}
+                    <td>
+                    <a href="{{ url_for('delete_user', user_id=user.id )}}">
+                    <span class="badge bg-danger rounded-pill">Remove</td></span> 
+                    </a>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    
+{% endblock %}
+
+<a href="{{ url_for('user', user_id=user.id) }}"> {{ user.name }} </a>
+<br>

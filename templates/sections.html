@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% include 'sidebar.html' %}
+{% block content %}
+
+    <div class="container mt-5">
+        <h2>Section List</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Date created</th>
+                    <th>No of books</th>                    
+
+                </tr>
+            </thead>
+            <tbody>
+                {% for section in sections %}
+                {% set book_count = section_book_count(section.section_id)%}
+                <tr>
+                    <td>{{ section.section_id }}</td>
+                    <td>{{ section.section_name }}</td>
+                    <td>{{ section.created_at }}</td>
+                    <td>{{ book_count }}</td>
+                    <td>
+                        <a href="{{ url_for('manage_section', section_id=section.section_id )}}">
+                        <span class="badge bg-primary rounded-pill">Manage books</td></span> 
+                        </a>
+                    <td>
+                        <a href="{{ url_for('delete_section', section_id=section.section_id )}}">
+                        <span class="badge bg-danger rounded-pill">Delete</td></span> 
+                        </a>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    
+{% endblock %}
+
+<a href="{{ url_for('user', user_id=user.id) }}"> {{ user.name }} </a>
+<br>

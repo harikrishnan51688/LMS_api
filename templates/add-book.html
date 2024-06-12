@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_form %}
+{% include 'sidebar.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-6 offset-md-3">
+      <h2 class="text-center text-dark mt-5">Add book</h2>
+      <div class="text-center mb-5 text-dark">Made with bootstrap</div>
+      <div class="card my-5">
+
+        <div class="card-body cardbody-color p-lg-5">
+
+          <div class="text-center">
+            <img src="https://cdn.pixabay.com/photo/2016/01/09/18/28/notebook-1130742_640.jpg"
+              class="img-fluid profile-image-pic img-thumbnail rounded-circle my-3" width="200px" alt="profile">
+          </div>
+          {{ render_form(form) }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

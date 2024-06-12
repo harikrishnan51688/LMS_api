@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% include 'sidebar.html' %}
+{% from 'bootstrap5/form.html' import render_field %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-6 offset-md-3">
+      <h2 class="text-center text-dark mt-5">Edit book</h2>
+      <div class="text-center mb-5 text-dark">Made with bootstrap</div>
+      <div class="card my-5">
+        
+        <div class="card-body cardbody-color p-lg-5">
+          
+          <div class="text-center">
+            <img src="https://cdn.pixabay.com/photo/2016/11/22/23/09/fountain-pen-1851096_640.jpg"
+            class="img-fluid profile-image-pic img-thumbnail rounded-circle my-3" width="200px" alt="profile">
+          </div>
+
+          <form method="POST" action="" enctype="multipart/form-data">
+            {{ form.csrf_token() }}
+            {{ render_field(form.title) }}
+            {{ render_field(form.subtitle) }}
+            {{ render_field(form.genre) }}
+            {{ render_field(form.pages) }}
+            {{ render_field(form.author) }}
+            {{ render_field(form.price) }}
+            <a href="{{ url_for('static', filename=form.file.data)}}", target="_blank" class="link-primary"> {{ form.file.data }}</a>
+            <!-- <div class="mb-3 required"><label class="form-label" for="file">File upload</label>
+              <input class="form-control" id="file" name="file" required="" type="file" wfd-id="id7">
+            </div> -->
+            {{ render_field(form.file) }}
+            <a href="{{ url_for('static', filename=form.image.data)}}", target="_blank" class="link-primary"> {{ form.image.data }}</a>
+            <!-- <div class="mb-3 required"><label class="form-label" for="file">File upload</label>
+              <input class="form-control" id="file" name="image" required="" type="file" wfd-id="id7">
+            </div> -->
+            {{ render_field(form.image) }}
+            {{ render_field(form.submit) }}
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

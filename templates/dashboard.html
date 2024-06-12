@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% include 'sidebar.html' %}
+{% block content %}
+<!-- Page Content -->
+<div class="content">
+  <h2>Dashboard</h2>
+
+  <!-- Stats Containers -->
+  <div class="row justify-content-center mb-3">
+    <div class="col-xs-10 col-sm-4 col-md-4">
+      <div class="card bg-light mb-3">
+        <div class="card-header text-center">Total Books</div>
+        <div class="card-body">
+          <h5 class="card-title text-center" id="total-books">{{ data.total_books }}</h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-xs-10 col-sm-4 col-md-4">
+      <div class="card bg-light mb-3">
+        <div class="card-header text-center">Total Users</div>
+        <div class="card-body">
+          <h5 class="card-title text-center" id="total-users">{{ data.total_users }}</h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-xs-10 col-sm-4 col-md-4">
+      <div class="card bg-light mb-3">
+        <div class="card-header text-center">Total Sections</div>
+        <div class="card-body">
+          <h5 class="card-title text-center" id="total-sections">{{ data.total_sections }}</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-3">
+    <div class="col-xs-10 col-sm-4 col-md-4">
+      <div class="card bg-light mb-3">
+        <div class="card-header text-center">Pending requests</div>
+        <div class="card-body">
+          <h5 class="card-title text-center" id="total-books">{{ data.total_requests }}</h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-xs-10 col-sm-4 col-md-4">
+      <div class="card bg-light mb-3">
+        <div class="card-header text-center">Total borrowed</div>
+        <div class="card-body">
+          <h5 class="card-title text-center" id="total-users">{{ data.current_borrowed }}</h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-xs-10 col-sm-4 col-md-4">
+      <div class="card bg-light mb-3">
+        <div class="card-header text-center">Total returned</div>
+        <div class="card-body">
+          <h5 class="card-title text-center" id="total-sections">{{ data.total_returned }}</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Chart Containers -->
+  <div class="row justify-content-center">
+    <div class="col-xs-10 col-sm-6 col-md-6">
+      <div class="card-body">
+        <h4 class="text-center mb-3">Section</h4>
+        <div class="chart-container">
+          <canvas id="sections"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xs-10 col-sm-6 col-md-6">
+      <div class="card-body">
+        <h4 class="text-center mb-3">Users </h4>
+        <div class="chart-container">
+          <canvas id="users"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  {% block javascript %}
+
+  <script>
+    fetch('http://127.0.0.1:5000/api/chart/sections')
+      .then(response => response.json())
+      .then(data => {
+        var ctx = document.getElementById('sections');
+        var myChart = new Chart(ctx, {
+          type: 'pie',
+          data: data.chart_data,
+        });
+      });
+
+    fetch('http://127.0.0.1:5000/api/chart/users')
+      .then(response => response.json())
+      .then(data => {
+        var ctx = document.getElementById('users');
+        var myChart = new Chart(ctx, {
+          type: 'line',
+          data: data.chart_data,
+          options: data.options,
+        });
+      });
+  </script>
+
+  {% endblock%}
+  {% endblock %}

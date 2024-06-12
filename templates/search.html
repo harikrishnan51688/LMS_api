@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="col-lg-15">
+    <div class="card my-4">
+      <label for="validationCustomUsername" class="form-label">
+        <h5 class="card-header">Search Books</h5>
+      </label>
+
+      <div class="card-body">
+        <form method="POST" action="">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="input-group">
+            <input type="text" name="text" class="form-control" id="validationDefaultUsername"
+              placeholder="Search for...">
+          </div>
+          <div class="text mt-2">
+            Author:
+            <select class="custom-select mr-sm-2" id="inlineFormCustomSelect" name="author">
+              <option selected>none</option>
+              {% for author in authors %}
+              <option value="{{ author }}">{{ author }}</option>
+              {% endfor %}
+            </select>
+            <br>
+            Genre:
+            <select class="custom-select mr-sm-2" id="inlineFormCustomSelect" name="genre">
+              <option selected>none</option>
+              {% for genre in genres %}
+              <option value="{{ genre }}">{{ genre }}</option>
+              {% endfor %}
+            </select>
+            <br>
+            Section:
+            <select class="custom-select mr-sm-2" id="inlineFormCustomSelect" name="section">
+              <option selected>none</option>
+              {% for section in sections %}
+              <option value="{{ section }}">{{ section }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <span class="input-group-btn">
+            <button class="btn btn-secondary" type="submit">Go!</button>
+          </span>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    {% for book in books %}
+    <div class="col-lg-3 col-md-6 mb-4">
+      <!-- <div class="card h-50"> -->
+        <div>
+        <a href="{{ url_for('book', book_id=book.id)}}">
+          <img class="card-img-top img-fluid"  style="width: 200px; height: 300px;" src="{{ url_for('static', filename=book.image) }}" alt="Book Image 1"
+            class="img-fluid">
+          <div class="card-body">
+            <h4 class="card-title">{{ book.title }}</h4>
+            <p class="card-text">{{ book.subtitle | truncate(30,'...') }}</p>
+        </a>
+      </div>
+      <div class="card-footer">
+        <a href="{{ url_for('request_book', book_id=book.id)}}" class="btn btn-secondary">Request</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

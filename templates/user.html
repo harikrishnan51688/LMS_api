@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% if not pending_requests %}
+{% if not borrowed_books %}
+{% if not returned_books %}
+<br>
+ <h2> No data available </h2>
+{% endif %}
+{% endif %}
+{% endif %}
+
+{% if pending_requests %}
+<div class="container mt-4">
+    <h2>Pending requests</h2>
+    <ul class="list-group">
+        {% for request in pending_requests %}
+        {% set book = get_book_by_id(request.book_id) %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="d-flex">
+                <img src="{{ url_for('static', filename=book.image) }}" class="me-3" alt="Product 1" style="width: 64px; height: 106px;">
+                <div>
+                    <h5 class="mt-0">{{ book.title }}</h5>
+                    {{ book.subtitle }}
+                </div>
+            </div>
+            <!-- <span class="badge bg-primary rounded-pill">$19.99</span> -->
+            <div>
+                <a href="{{ url_for('cancel_request', request_id=request.request_id )}}">
+                <button type="button" class="btn btn-danger rounded-pill btn-sm">cancel request</button>
+                </a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if borrowed_books %}
+<div class="container mt-4">
+    <h2>Borrowed books</h2>
+    <ul class="list-group">
+        {% for book_ in borrowed_books %}
+        {% set book = get_book_by_id(book_.book_id) %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="d-flex">
+                <img src="{{ url_for('static', filename=book.image) }}" class="me-3" alt="Product 1" style="width: 64px; height: 106px;">
+                <div>
+                    <h5 class="mt-0">{{ book.title }}</h5>
+                    {{ book.subtitle }}<br>
+                    <span class="badge bg-secondary rounded-pill">Issued on: </span> {{ book_.release_date }}<br>
+                    <span class="badge bg-secondary rounded-pill">Due date: </span> {{ exp_date_dis }}<br>
+
+                </div>
+            </div>
+            <!-- <span class="badge bg-primary rounded-pill">$19.99</span> -->
+            <div>
+                {%if current_user.is_superuser %}
+                <a href="{{ url_for('revoke_access', user_id=user_id, book_id=book.id, borrow_id=book_.borrow_id ) }}">
+                <button type="button" class="btn btn-danger rounded-pill btn-sm">revoke</button>
+                </a>
+                <a href="https://mozilla.github.io/pdf.js/web/viewer.html?file=http://127.0.0.1:5000/{{ url_for('static', filename=book.file)}}" type="application/pdf" target="_blank">
+                <button type="button" class="btn btn-secondary rounded-pill btn-sm">view</button>
+                </a>
+                {% else %}
+                <a href="{{ url_for('return_book', book_id=book.id, borrow_id=book_.borrow_id ) }}">
+                    <button type="button" class="btn btn-dark rounded-pill btn-sm">return</button>
+                </a>
+                <a href="https://mozilla.github.io/pdf.js/web/viewer.html?file=http://127.0.0.1:5000/{{ url_for('static', filename=book.file)}}" type="application/pdf" target="_blank">
+                    <button type="button" class="btn btn-secondary rounded-pill btn-sm">view</button>
+                </a>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if returned_books %}
+<div class="container mt-4">
+    <h2>Returned books</h2>
+    <ul class="list-group">
+        {% for book_ in returned_books %}
+        {% set book = get_book_by_id(book_.book_id) %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="d-flex">
+                <img src="{{ url_for('static', filename=book.image) }}" class="me-3" alt="Product 1" style="width: 64px; height: 106px;">
+                <div>
+                    <h5 class="mt-0">{{ book.title }}</h5>
+                    {{ book.subtitle }}<br>
+                    <span class="badge bg-secondary rounded-pill">Returned on: </span> {{ book_.return_date }}<br>
+
+                </div>
+            </div>
+
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+<br>
+<br>
+
+
+{% endblock %}

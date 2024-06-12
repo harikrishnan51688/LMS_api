@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="col-xs-10 col-sm-6 col-md-6">
+    <div class="card card-style mb-2">
+        <div class="card-body">
+            <div class="chart-container" style="position: relative;">
+                <canvas id="sections"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-xs-10 col-sm-6 col-md-6">
+    <div class="card card-style mb-2">
+        <div class="card-body">
+            <div class="chart-container" style="position: relative;">
+                <canvas id="users"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+  {% block javascript %}
+    <script>
+
+            fetch('http://127.0.0.1:5000/api/chart/sections')
+                .then(response => response.json())
+                .then(data => {
+                    var ctx = document.getElementById('sections');
+                    var myChart = new Chart(ctx, {
+                        type: 'pie',
+                      data: data.chart_data,
+                  });
+              });
+
+            fetch('http://127.0.0.1:5000/api/chart/users')
+            .then(response => response.json())
+            .then(data => {
+                var ctx = document.getElementById('users');
+                var myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: data.chart_data,
+                    options: data.options,
+                });
+            });
+    </script>
+  {% endblock%}
+
+{% endblock %}

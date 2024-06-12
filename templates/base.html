@@ -1,0 +1,38 @@
+{% from 'bootstrap5/utils.html' import render_messages %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Index</title>
+    {{ bootstrap.load_css() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    {% include 'navbar.html' %}
+    {% block sidebar %}
+
+    {% endblock %}
+    <main class="main">
+        {{ render_messages(container=False, dismissible=True, dismiss_animate=True) }}
+        {% block content %}
+
+        {% endblock %}
+    </main>
+
+    <footer class="bg-body-tertiary text-center text-lg-start">
+        <!-- Copyright -->
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.05);">
+          © 2024 Copyright:
+          <a class="text-body" href="#">Library.iitm</a>
+        </div>
+        <!-- Copyright -->
+    </footer>
+
+    {{ bootstrap.load_js() }}
+</body>
+
+</html>

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% include 'sidebar.html' %}
+{% block content %}
+{% if not all_books %}
+<div class="container mt-5">
+    <h2>Add book to: {{ section.section_name }}</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Author</th>
+                <th>Genre</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td>{{ book.id }}</td>
+                <td>{{ book.title }}</td>
+                <td>{{ book.author }}</td>
+                <td>{{ book.genre }}</td>
+                <td>
+                    <a
+                        href="{{ url_for('add_booktosection', section_id=section.section_id, book_id=book.id, state='add') }}">
+                        <span class="badge bg-primary rounded-pill">Add book
+                </td></span>
+                </a>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="container mt-5">
+    <h2>All books</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Author</th>
+                <th>Genre</th>
+                <th>Price</th>
+                <th>Created at</th>
+                <th>Sections</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td>{{ book.id }}</td>
+                <td><a href="{{url_for('book', book_id=book.id)}}"> {{ book.title }} </a></td>
+                <td>{{ book.author }}</td>
+                <td>{{ book.genre }}</td>
+                <td>₹{{ book.price }}</td>
+                <td>{{ book.created_at }}</td>
+                <td>
+                {% for section in book.sections %}
+                {{ section.section_name }}{% if not loop.last %},{% endif %}
+                {% endfor %}
+                </td>
+                <td>
+                    <a href="{{ url_for('edit_book', book_id=book.id) }}">
+                        <span class="badge bg-primary rounded-pill">Edit book
+                </td></span>
+                </a>
+                <td>
+                    <a href="{{ url_for('delete_book', book_id=book.id) }}">
+                        <span class="badge bg-danger rounded-pill">Delete
+                </td></span>
+                </a>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% include 'sidebar.html' %}
+{% block content %}
+
+
+<div class="container mt-4">
+    <h2>Requests</h2>
+    {% if requests  %}
+    <ul class="list-group">
+        {% for request in requests %}
+        {% set book = get_book_by_id(request.book_id) %}
+        {% set user = get_user_by_id(request.user_id) %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="d-flex">
+                <img src="{{ url_for('static', filename=book.image) }}" class="me-3" alt="Product 1" style="width: 64px; height: 106px;">
+                <div>
+                    <h5 class="mt-0">{{ book.title }}</h5>
+                    <span class="badge bg-secondary rounded-pill">user:</span> {{ user.name }}
+                </div>
+            </div>
+            <!-- <span class="badge bg-primary rounded-pill">$19.99</span> -->
+            <div>
+                <a href="{{ url_for('approve_request', request_id=request.request_id) }}">
+                <button type="button" class="btn btn-success rounded-pill btn-sm">Approve</button>
+                </a>
+                <a href="{{ url_for('cancel_request', request_id=request.request_id )}}">
+                <button type="button" class="btn btn-danger rounded-pill btn-sm">Cancel</button>
+                </a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <span class="badge bg-secondary rounded-pill">No requests</span>
+    <br>
+    <br>
+    {% endif %}
+</div>
+
+{% endblock %}
