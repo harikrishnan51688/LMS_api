@@ -88,6 +88,7 @@ class BorrowBook(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     release_date = db.Column(db.DateTime(timezone=True), default=get_time)
     due_date = db.Column(db.DateTime(timezone=True), default=get_time)
+    auto_expiry = db.Column(db.Boolean(), default=True)
 
 class ReturnBook(db.Model):
     __tablename__ = 'return_record'

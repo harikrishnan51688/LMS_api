@@ -18,6 +18,9 @@ cache = Cache(config=config['cache'])
 
 secret_key = config['default'].SECRET_KEY
 
+# In days
+BOOK_EXPIRY_TIME = 7 
+
 def is_user(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -499,6 +502,7 @@ class Profile(Resource):
         "user_id": req.user_id,
         "release_date": req.release_date,
         "due_date": req.due_date,
+        "auto_expiry": req.auto_expiry,
         "book_details": {
             "title": book.title,
             "subtitle": book.subtitle,
@@ -533,12 +537,13 @@ class Profile(Resource):
         # Auto expiry after due date
         borrowed_books = BorrowBook.query.filter_by(user_id=current_user.id).all()
         for book in borrowed_books:
-            if datetime.datetime.now() > book.due_date:
-                borrow = BorrowBook.query.filter_by(book_id=book.book_id).first()
-                returned_book = ReturnBook(user_id=current_user.id, book_id=book.book_id)
-                db.session.add(returned_book)
-                db.session.delete(borrow)
-                db.session.commit()
+            if book.auto_expiry:
+                if datetime.datetime.now() > book.due_date:
+                    borrow = BorrowBook.query.filter_by(book_id=book.book_id).first()
+                    returned_book = ReturnBook(user_id=current_user.id, book_id=book.book_id)
+                    db.session.add(returned_book)
+                    db.session.delete(borrow)
+                    db.session.commit()
     
         return jsonify({'pending_requests': p_dict, 'borrowed_books': b_dict, 'returned_books': r_dict})
 
@@ -683,14 +688,15 @@ class ApproveRequest(Resource):
         try:
             request_id = request.args.get('request_id')
             requested_book = RequestBook.query.filter_by(request_id=request_id).first()
-            borrow = BorrowBook(book_id=requested_book.book_id, user_id=requested_book.user_id, due_date=get_time()+timedelta(days=7))
+            borrow = BorrowBook(book_id=requested_book.book_id, user_id=requested_book.user_id, due_date=get_time()+timedelta(days=BOOK_EXPIRY_TIME))
             db.session.add(borrow)
             db.session.delete(requested_book)
             db.session.commit()
             return jsonify({'message': 'Book approved', 'status': 'success'})
         except:
             return jsonify({'message': 'Error approving request', 'status': 'error'})
-        
+
+# Books not in a specific section.
 class BooksNotInSection(Resource):
     def get(self):
         try:
@@ -759,3 +765,22 @@ class CreateAccount(Resource):
                 return jsonify({'token': token})
         except:
             return jsonify({'message': 'Error while creating account', 'status': 'error'})
+
+class ToggleExpiry(Resource):
+    @is_user
+    def post(current_user, self):
+        try:
+            data = request.get_json()
+            borrow_id = data.get('borrow_id')
+            borrow_book = BorrowBook.query.filter_by(borrow_id=borrow_id).first()
+            if borrow_book.auto_expiry:
+                borrow_book.auto_expiry = False
+                db.session.commit()
+                return jsonify({'message': 'Auto expiry set to manual', 'status': 'success'})
+            else:
+                borrow_book.auto_expiry = True
+                borrow_book.due_date = get_time()+timedelta(days=BOOK_EXPIRY_TIME)
+                db.session.commit()
+                return jsonify({'message': 'Auto expire after 7 days', 'status': 'success'})
+        except:
+            return jsonify({'message': 'Error updating expiry period', 'status': 'error'})
