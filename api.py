@@ -32,6 +32,9 @@ def is_user(f):
         try:
             data = jwt.decode(token, secret_key, algorithms=['HS256'])
             current_user = User.query.filter_by(email=data['email']).first()
+            if current_user:
+                current_user.last_activity = datetime.datetime.now()
+                db.session.commit()
         except:
             return jsonify({"message":"Token is invalid"})
         return f(current_user, *args, **kwargs)

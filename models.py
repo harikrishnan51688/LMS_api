@@ -18,6 +18,7 @@ class User(UserMixin, db.Model):
     date = db.Column(db.DateTime(timezone=True), default=get_time)
     active = db.Column(db.Boolean(), default=True)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), unique=False, nullable=False)
+    last_activity = db.Column(db.DateTime(timezone=True), nullable=True)
     
     role = db.relationship('Role', back_populates='user', uselist=False)
     ebooks = relationship('Ebook', backref='user', cascade='all, delete-orphan', lazy='dynamic')
