@@ -17,6 +17,8 @@ api.add_resource(SearchTags, '/api/searchtags')
 api.add_resource(Profile, '/api/profile')
 api.add_resource(IsBorrowed, '/api/isborrowed')
 api.add_resource(ToggleExpiry, '/api/toggle-expiry')
+api.add_resource(RequestData, '/api/request-data')
+api.add_resource(DownloadData, '/api/download-data')
 
  ## For Request, cancel, return, approve
 api.add_resource(ReqBook, '/api/requestbook')

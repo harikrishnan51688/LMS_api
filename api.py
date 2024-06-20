@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, send_file
 from flask_restful import Resource, fields, marshal_with, marshal
 from models import Ebook, User, Section, BorrowBook, RequestBook, ReturnBook
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -13,6 +13,7 @@ from flask_caching import Cache
 from config import config
 from models import db
 from flask import current_app as app
+from celery.result import AsyncResult
 
 cache = Cache(config=config['cache'])
 
@@ -787,3 +788,31 @@ class ToggleExpiry(Resource):
                 return jsonify({'message': 'Auto expire after 7 days', 'status': 'success'})
         except:
             return jsonify({'message': 'Error updating expiry period', 'status': 'error'})
+
+
+class RequestData(Resource):
+    @is_user
+    def post(current_user, self):
+        from tasks import generate_csv
+        try:
+            task = generate_csv.delay(current_user.id)
+            return jsonify({'task_id': task.id, 'message': 'Data requested wait some time', 'status': 'success'})
+        except:
+            return jsonify({'message': 'Error requesting data', 'status': 'error'})
+
+class DownloadData(Resource):
+    @is_user
+    def get(current_user, self):
+        from tasks import generate_csv
+        try:
+            task_id = request.args.get('task_id')
+            task = AsyncResult(task_id, app=generate_csv)
+            if task.state == 'SUCCESS':
+                csv_file_path = task.result.split('static')[1]
+                return jsonify({'path': csv_file_path, 'status': 'success'})
+            elif task.state == 'FAILURE':
+                return jsonify({'message': f'Failed {task.info}', 'status': 'error'})
+            else:
+                return jsonify({'message': 'Still processing. please wait', 'status': 'info'})
+        except:
+            return jsonify({'message': 'Error downloading data', 'status': 'error'})
