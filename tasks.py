@@ -2,13 +2,9 @@ from main import celery
 from celery.schedules import crontab
 import csv
 import os
-from models import db
 from models import RequestBook, BorrowBook, ReturnBook, User
-
-
-@celery.task
-def test():
-    return "Hi mom"
+from datetime import datetime, timedelta
+from mail import send_remainder
 
 
 @celery.task
@@ -23,8 +19,17 @@ def generate_csv(user_id):
     return file_path
 
 
+@celery.task
+def remainder():
+    b = BorrowBook.query.all()
+    for book in b:
+        if book.auto_expiry and (book.due_date - datetime.now()) < timedelta(days=8):
+            send_remainder.delay(email=book.user.email, title=book.ebook.title, due_date=book.due_date)
+
+    
+
 # # run task every 10 sec
 @celery.on_after_configure.connect
 def hello(sender, **kwargs):
-    sender.add_periodic_task(10, test.s(), name='test')
+    sender.add_periodic_task(10, remainder.s(), name='remainder')
 

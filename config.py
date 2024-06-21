@@ -14,7 +14,7 @@ class Config:
     MAIL_USE_SSL = False
     MAIL_USERNAME = None
     MAIL_PASSWORD = None
-    MAIL_DEBUG = True                                    # Fix in prod
+    MAIL_DEBUG = False                                    # Fix in prod
     MAIL_DEFAULT_SENDER = 'adminlms@email.com'
 
 
