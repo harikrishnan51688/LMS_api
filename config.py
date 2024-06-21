@@ -8,6 +8,15 @@ class Config:
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'database.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    MAIL_SERVER = 'localhost'
+    MAIL_PORT = 1025
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = False
+    MAIL_USERNAME = None
+    MAIL_PASSWORD = None
+    MAIL_DEBUG = True                                    # Fix in prod
+    MAIL_DEFAULT_SENDER = 'adminlms@email.com'
+
 
 class DevelopmentConfig(Config):
     DEBUG = True

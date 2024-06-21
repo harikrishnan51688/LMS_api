@@ -8,6 +8,7 @@ from models import db
 from api import cache
 from flask_migrate import Migrate
 from roles import setup_db
+from flask_mail import Mail
 
 app = Flask(__name__)
 CORS(app)
@@ -23,6 +24,7 @@ db.init_app(app)
 cache.init_app(app)
 migrate = Migrate(app, db)
 
+mail = Mail(app)
 
 with app.app_context():
     # db.drop_all()
