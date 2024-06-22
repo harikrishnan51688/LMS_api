@@ -1,6 +1,7 @@
 from main import mail, celery
 from flask_mail import Message
 from smtplib import SMTPException
+from flask import render_template
 
 
 @celery.task
@@ -9,10 +10,15 @@ def send_email():
     'Hello',
     sender='admin@email.com',
     recipients=['recipient@example.com'],
-    body='This is a test email sent from Flask-Mail!'
   )
-  mail.send(msg)
-  return 'Email sent succesfully!'
+  # msg.body = render_template('template.html')
+  msg.html = render_template('mail-template.html')
+  try:
+    mail.send(msg)
+    return 'Success'
+  except SMTPException as e:
+    return f'Failed {e}'
+  
 
 
 @celery.task

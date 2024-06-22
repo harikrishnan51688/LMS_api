@@ -10,7 +10,7 @@ def celery_init_app(app: Flask) -> Celery:
                 return self.run(*args, **kwargs)
 
     celery_app = Celery(app.name, task_cls=FlaskTask)
-    celery_app.config_from_object(config["celery"])
+    celery_app.config_from_object(config["default"])
     celery_app.set_default()
     app.extensions["celery"] = celery_app
     return celery_app

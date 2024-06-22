@@ -1,4 +1,4 @@
-from flask import request, jsonify, send_file
+from flask import request, jsonify
 from flask_restful import Resource, fields, marshal_with, marshal
 from models import Ebook, User, Section, BorrowBook, RequestBook, ReturnBook
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -15,7 +15,7 @@ from models import db
 from flask import current_app as app
 from celery.result import AsyncResult
 
-cache = Cache(config=config['cache'])
+cache = Cache()
 
 secret_key = config['default'].SECRET_KEY
 
