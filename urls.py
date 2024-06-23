@@ -39,6 +39,9 @@ api.add_resource(Ebook_Byid, '/api/book/<int:book_id>')
 api.add_resource(Create_Ebook, '/api/add-book')
 api.add_resource(Update_Ebook, '/api/update-book/<int:book_id>')
 api.add_resource(Delete_Ebook, '/api/delete-book')
+api.add_resource(RateBook, '/api/submit-rating')
+api.add_resource(DeleteRating, '/api/delete-rating')
+api.add_resource(Ratings, '/api/ratings')
 
 # API for Sections
 api.add_resource(Sections_, '/api/sections')

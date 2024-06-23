@@ -25,6 +25,7 @@ class User(UserMixin, db.Model):
     request_records = relationship('RequestBook', backref='user', cascade='all, delete-orphan', lazy='dynamic')
     borrow_records = relationship('BorrowBook', backref='user', cascade='all, delete-orphan', lazy='dynamic')
     return_records = relationship('ReturnBook', backref='user', cascade='all, delete-orphan', lazy='dynamic')
+    ratings = relationship('Rating', backref='user')
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -54,6 +55,7 @@ class Ebook(db.Model):
     requests_ = db.relationship('RequestBook', backref='ebook', cascade='all, delete-orphan')
     borrows_ = db.relationship('BorrowBook', backref='ebook', cascade='all, delete-orphan')
     returns_ = db.relationship('ReturnBook', backref='ebook', cascade='all, delete-orphan')
+    ratings = db.relationship('Rating', backref='ebook', cascade='all, delete-orphan')
 
     created_at = db.Column(db.DateTime(timezone=True), default=get_time)
     # updated_at = db.Column(db.DateTime(timezone=True), default=datetime.now().replace(microsecond=0))
@@ -114,8 +116,6 @@ class Rating(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     rating = db.Column(db.Integer, default=0)
     comment = db.Column(db.String(255), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    book_id = db.Column(db.Integer, db.ForeignKey('ebook.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('ebook.id'), nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), default=get_time)
-
-    user = db.relationship('User', backref='ratings')

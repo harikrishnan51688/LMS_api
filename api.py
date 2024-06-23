@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from flask_restful import Resource, fields, marshal_with, marshal
-from models import Ebook, User, Section, BorrowBook, RequestBook, ReturnBook
+from models import Ebook, User, Section, BorrowBook, RequestBook, ReturnBook, Rating
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 import jwt
@@ -816,3 +816,50 @@ class DownloadData(Resource):
                 return jsonify({'message': 'Still processing. please wait', 'status': 'info'})
         except:
             return jsonify({'message': 'Error downloading data', 'status': 'error'})
+
+class RateBook(Resource):
+    @is_user
+    def post(current_user, self):
+        book_id = request.form.get('book_id')
+        comment = request.form.get('comment')
+        rating = request.form.get('rating')
+        try:
+            rating = Rating(comment=comment, rating=rating, book_id=book_id, user_id=current_user.id)
+            db.session.add(rating)
+            db.session.commit()
+            return jsonify({'message': 'Rating posted', 'status': 'success'})
+        except:
+            return jsonify({'message': 'Error rating book', 'status': 'error'})
+
+class DeleteRating(Resource):
+    @is_admin
+    def delete(current_user, self):
+        comment_id = request.form.get('comment_id')
+        try:
+            comment = Rating.query.filter_by(id=comment_id).first_or_404()
+            db.session.delete(comment)
+            db.session.commit()
+            return jsonify({'message': 'Rating deleted', 'status': 'success'})
+        except:
+            return jsonify({'message': 'Error deleting rating', 'status': 'error'})
+        
+class Ratings(Resource):
+    def get(self):
+        book_id = request.args.get('book_id')
+        try:
+            book = Ebook.query.filter_by(id=book_id).first_or_404()
+            ratings = book.ratings
+            data = []
+            for rating in ratings:
+                r = {
+                    'id': rating.id,
+                    'rating': rating.rating,
+                    'comment': rating.comment,
+                    'user_id': rating.user_id,
+                    'created_at': rating.created_at,
+                    'user_name': rating.user.name
+                }
+                data.append(r)
+            return jsonify({'ratings': data})
+        except:
+            return jsonify({'message': "Error fetching ratings", 'status': 'error'})
