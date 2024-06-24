@@ -1,6 +1,6 @@
 database.db
 .venv
-.lnxenv
+static/csv/
 migrations/
 __pycache__
 

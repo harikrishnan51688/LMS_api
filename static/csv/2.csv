@@ -1,2 +1,0 @@
-user_id,borrow_id,book_id,release_date,due_date,book_title,auto_expiry
-2,2,2,2024-06-14 18:18:56,2024-06-25 20:25:12,sa,False

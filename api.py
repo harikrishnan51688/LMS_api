@@ -796,7 +796,7 @@ class RequestData(Resource):
         from tasks import generate_csv
         try:
             task = generate_csv.delay(current_user.id)
-            return jsonify({'task_id': task.id, 'message': 'Data requested wait some time', 'status': 'success'})
+            return jsonify({'task_id': task.id, 'message': 'Data requested wait some time', 'status': 'info'})
         except:
             return jsonify({'message': 'Error requesting data', 'status': 'error'})
 
@@ -809,7 +809,7 @@ class DownloadData(Resource):
             task = AsyncResult(task_id, app=generate_csv)
             if task.state == 'SUCCESS':
                 csv_file_path = task.result.split('static')[1]
-                return jsonify({'path': csv_file_path, 'status': 'success'})
+                return jsonify({'path': csv_file_path, 'message': 'Data export complete', 'status': 'success'})
             elif task.state == 'FAILURE':
                 return jsonify({'message': f'Failed {task.info}', 'status': 'error'})
             else:
@@ -834,7 +834,8 @@ class RateBook(Resource):
 class DeleteRating(Resource):
     @is_admin
     def delete(current_user, self):
-        comment_id = request.form.get('comment_id')
+        comment_id = request.args.get('comment_id')
+        print(comment_id)
         try:
             comment = Rating.query.filter_by(id=comment_id).first_or_404()
             db.session.delete(comment)
@@ -862,4 +863,4 @@ class Ratings(Resource):
                 data.append(r)
             return jsonify({'ratings': data})
         except:
-            return jsonify({'message': "Error fetching ratings", 'status': 'error'})
+            return jsonify({'message': "Error fetching ratings", 'status': 'error'}), 404
