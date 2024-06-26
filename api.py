@@ -835,7 +835,6 @@ class DeleteRating(Resource):
     @is_admin
     def delete(current_user, self):
         comment_id = request.args.get('comment_id')
-        print(comment_id)
         try:
             comment = Rating.query.filter_by(id=comment_id).first_or_404()
             db.session.delete(comment)
@@ -864,3 +863,26 @@ class Ratings(Resource):
             return jsonify({'ratings': data})
         except:
             return jsonify({'message': "Error fetching ratings", 'status': 'error'}), 404
+
+class GrantBook(Resource):
+    @is_admin
+    def post(current_user, self):
+        data = request.get_json()
+        book_id = data.get('book_id')
+        user_id = data.get('user_id')
+        try:
+            user = User.query.filter_by(id=user_id).first_or_404()
+            book = Ebook.query.filter_by(id=book_id).first_or_404()
+            borrow = BorrowBook.query.filter_by(user_id=user.id , book_id=book.id).first()
+            if borrow:
+                return jsonify({'message': 'Book already borrowed', 'status': 'info'})
+            else:
+                borrow = BorrowBook(book_id=book.id, user_id=user.id, due_date=get_time()+timedelta(days=BOOK_EXPIRY_TIME))
+                db.session.add(borrow)
+                r_book = RequestBook.query.filter_by(user_id=user.id, book_id=book.id).first()
+                if r_book:
+                    db.session.delete(r_book)
+                db.session.commit()
+                return jsonify({'message': 'Book granted', 'status': 'success'})
+        except:
+            return jsonify({'message': 'Error while granting book', 'status': 'error'})

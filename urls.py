@@ -27,6 +27,7 @@ api.add_resource(CancelRequest, '/api/cancelrequest')
 api.add_resource(RemoveUser, '/api/removeuser')
 api.add_resource(ApproveRequest, '/api/approve-request')
 api.add_resource(BooksNotInSection, '/api/section/remaining-books')
+api.add_resource(GrantBook, '/api/grant-book')
 
 # Admin dashboard
 api.add_resource(Stats, '/api/stats')
