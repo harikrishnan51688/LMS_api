@@ -1,7 +1,9 @@
-from main import mail, celery
+from main import mail, celery, db
 from flask_mail import Message
 from smtplib import SMTPException
 from flask import render_template
+from datetime import datetime, timedelta
+from models import BorrowBook, RequestBook, ReturnBook, User, Rating, Section, Ebook
 
 
 @celery.task
@@ -35,3 +37,29 @@ def send_remainder(email, title, due_date):
   except SMTPException as e:
     return f'Failed {e}'
   
+@celery.task
+def send_monthly_report():
+  last_thirty_days = datetime.now() - timedelta(days=30)
+
+  borrow_count = db.session.query(BorrowBook).filter(BorrowBook.release_date > last_thirty_days).count()
+  request_count = db.session.query(RequestBook).count()
+  return_count = db.session.query(ReturnBook).filter(ReturnBook.return_date > last_thirty_days).count()
+  active_users = db.session.query(User).filter(User.last_activity > last_thirty_days).count()
+  sections_created = db.session.query(Section).filter(Section.created_at > last_thirty_days).count()
+  ebook_added = db.session.query(Ebook).filter(Ebook.created_at > last_thirty_days).count()
+  ratings_count = db.session.query(Rating).filter(Rating.created_at > last_thirty_days).count()
+
+  data = {'borrow_count':borrow_count, 'request_count':request_count, 'return_count':return_count, 'active_users':active_users, 
+          'sections_created':sections_created, 'ebook_added':ebook_added, 'ratings_count':ratings_count}
+
+  msg = Message(
+    'Monthly Library report',
+    sender='system@lms.com',
+    recipients=['admin@email.com'],
+  )
+  msg.html = render_template('mail-template.html', data=data)
+  try:
+    mail.send(msg)
+    return 'Success'
+  except SMTPException as e:
+    return f'Failed {e}'

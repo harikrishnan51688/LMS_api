@@ -5,7 +5,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 import os
 from models import RequestBook, BorrowBook, ReturnBook, User
 from datetime import datetime, timedelta
-from mail import send_remainder
+from mail import send_remainder, send_monthly_report
 
 
 @celery.task
@@ -50,7 +50,7 @@ def generate_csv(user_id):
     return zip_path
 
 @celery.task
-def remainder():
+def expiry_remainder():
     b = BorrowBook.query.all()
     for book in b:
         if book.auto_expiry and (book.due_date - datetime.now()) < timedelta(days=8):
@@ -58,8 +58,11 @@ def remainder():
 
     
 
-# # run task every 10 sec
+# run task every 10 sec
 @celery.on_after_configure.connect
-def hello(sender, **kwargs):
-    sender.add_periodic_task(10, remainder.s(), name='remainder')
+def book_expiry_remainder(sender, **kwargs):
+    sender.add_periodic_task(10, expiry_remainder.s(), name='remainder')
 
+@celery.on_after_configure.connect
+def monthly_report(sender, **kwargs):
+    sender.add_periodic_task(10, send_monthly_report.s(), name='monthly_report')
