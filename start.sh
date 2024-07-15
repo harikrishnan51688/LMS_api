@@ -13,6 +13,7 @@ export FLASK_APP=main.py
 
 flask run 
 
-# celery -A main.celery worker -l info 
+# celery -A tasks.celery worker -l info 
+# celery -A tasks.celery flower 
 
 # wait
