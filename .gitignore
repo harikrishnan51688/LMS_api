@@ -3,7 +3,7 @@ database.db
 static/csv/
 migrations/
 __pycache__
-
+.env*
 
 static/uploads/images/*
 static/uploads/pdf/*

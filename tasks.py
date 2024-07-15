@@ -7,6 +7,7 @@ from models import RequestBook, BorrowBook, ReturnBook, User
 from datetime import datetime, timedelta
 from mail import send_remainder, send_monthly_report
 
+SEND_REMAINDER_AFTER = 8         # Day in which remainder mail send (due date)
 
 @celery.task
 def generate_csv(user_id):
@@ -53,16 +54,21 @@ def generate_csv(user_id):
 def expiry_remainder():
     b = BorrowBook.query.all()
     for book in b:
-        if book.auto_expiry and (book.due_date - datetime.now()) < timedelta(days=8):
+        if book.auto_expiry and (book.due_date - datetime.now()) < timedelta(days=SEND_REMAINDER_AFTER):
             send_remainder.delay(email=book.user.email, title=book.ebook.title, due_date=book.due_date)
 
     
-
 # run task every 10 sec
 @celery.on_after_configure.connect
 def book_expiry_remainder(sender, **kwargs):
-    sender.add_periodic_task(10, expiry_remainder.s(), name='remainder')
+    sender.add_periodic_task(
+        crontab(minute=3), # every 3 min 
+        expiry_remainder.s(), 
+        name='remainder')
 
 @celery.on_after_configure.connect
 def monthly_report(sender, **kwargs):
-    sender.add_periodic_task(10, send_monthly_report.s(), name='monthly_report')
+    sender.add_periodic_task(
+        crontab(), # every minute
+        send_monthly_report.s(), 
+        name='monthly_report')

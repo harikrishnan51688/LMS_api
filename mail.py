@@ -4,7 +4,13 @@ from smtplib import SMTPException
 from flask import render_template
 from datetime import datetime, timedelta
 from models import BorrowBook, RequestBook, ReturnBook, User, Rating, Section, Ebook
+import requests
+from dotenv import load_dotenv
+import os
 
+load_dotenv(dotenv_path='.env.secret')
+
+GCHAT_KEY = os.getenv("GCHAT_KEY")
 
 @celery.task
 def send_email():
@@ -33,6 +39,8 @@ def send_remainder(email, title, due_date):
   )
   try:
     mail.send(msg)
+    requests.post(f'https://chat.googleapis.com/v1/spaces/AAAAIJz-aVM/messages?key={GCHAT_KEY}&token=hgaPCT2OoBlrGcM1Zrp9bjGTkUDvlIkrLJcbSrzmqFM', 
+                  json={'text':f'*{email}* the book "*{title}*" due date on *{due_date}*'})
     return 'Success'
   except SMTPException as e:
     return f'Failed {e}'
