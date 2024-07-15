@@ -361,6 +361,7 @@ class Ebook_Byid(Resource):
         json_ebook["file"] = book.file
         json_ebook["image"] = book.image
         json_ebook["created_at"] = book.created_at
+        json_ebook["avg_rating"] = book.average_rating()
         return jsonify({"book":json_ebook})
 
 class Ebook_(Resource):
@@ -368,6 +369,7 @@ class Ebook_(Resource):
     def get(self):
         ebooks = Ebook.query.all()
         books_data = []
+        bookwith_rating = []
         for book in ebooks:
             book_data = {
                 'id': book.id,
@@ -383,8 +385,20 @@ class Ebook_(Resource):
                 'sections': [section.section_name for section in book.sections]
             }
             books_data.append(book_data)
-        # json_ebooks = list(map(lambda x: x.to_json(), ebooks))
-        return jsonify({"books": books_data})
+
+        avg_ratings = db.session.query(Rating.book_id, func.avg(Rating.rating).label('average_rating')).group_by(Rating.book_id).order_by(func.avg(Rating.rating).desc()).all()
+        for book_id, avg_rating in avg_ratings:
+            book = Ebook.query.get(book_id)
+            book_data = {
+                'id': book.id,
+                'title': book.title,
+                'subtitle': book.subtitle,
+                'image': book.image,
+                'avg_rating': avg_rating
+            }
+            bookwith_rating.append(book_data)
+
+        return jsonify({"books": books_data, "basedOnRatings": bookwith_rating})
 
 class Login_(Resource):
     def get(self):
@@ -621,8 +635,10 @@ class Stats(Resource):
                 total_requests = RequestBook.query.count()
                 current_borrowed = BorrowBook.query.count()
                 total_returned = ReturnBook.query.count()
+                last_thirty_days = datetime.datetime.now() - timedelta(days=7)
+                active_users = db.session.query(User).filter(User.last_activity > last_thirty_days).count() - 1
                 data = {"total_books": total_books, "total_users": total_users, "total_sections": total_sections, "total_requests": total_requests,
-                "total_returned": total_returned, "current_borrowed": current_borrowed}
+                "total_returned": total_returned, "current_borrowed": current_borrowed, "active_users": active_users}
                 return jsonify({'data': data})
             except:
                 return jsonify({'message': 'Error occured when collecting stats'})
@@ -827,6 +843,7 @@ class RateBook(Resource):
             rating = Rating(comment=comment, rating=rating, book_id=book_id, user_id=current_user.id)
             db.session.add(rating)
             db.session.commit()
+            cache.delete('books')
             return jsonify({'message': 'Rating posted', 'status': 'success'})
         except:
             return jsonify({'message': 'Error rating book', 'status': 'error'})
@@ -839,6 +856,7 @@ class DeleteRating(Resource):
             comment = Rating.query.filter_by(id=comment_id).first_or_404()
             db.session.delete(comment)
             db.session.commit()
+            cache.delete('books')
             return jsonify({'message': 'Rating deleted', 'status': 'success'})
         except:
             return jsonify({'message': 'Error deleting rating', 'status': 'error'})

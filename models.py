@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from sqlalchemy.orm import relationship
 from datetime import datetime
+from sqlalchemy import func
 
 db = SQLAlchemy()
 
@@ -59,6 +60,9 @@ class Ebook(db.Model):
 
     created_at = db.Column(db.DateTime(timezone=True), default=get_time)
     # updated_at = db.Column(db.DateTime(timezone=True), default=datetime.now().replace(microsecond=0))
+
+    def average_rating(self):
+        return db.session.query(func.avg(Rating.rating)).filter(Rating.book_id == self.id).scalar()
 
     def to_json(self):
         return {
