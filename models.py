@@ -26,6 +26,7 @@ class User(UserMixin, db.Model):
     request_records = relationship('RequestBook', backref='user', cascade='all, delete-orphan', lazy='dynamic')
     borrow_records = relationship('BorrowBook', backref='user', cascade='all, delete-orphan', lazy='dynamic')
     return_records = relationship('ReturnBook', backref='user', cascade='all, delete-orphan', lazy='dynamic')
+    purchase_records = relationship('Purchase', backref='user', cascade='all, delete-orphan', lazy='dynamic')
     ratings = relationship('Rating', backref='user')
 
 class Role(db.Model):
@@ -123,3 +124,11 @@ class Rating(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('ebook.id'), nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), default=get_time)
+
+class Purchase(db.Model):
+    __tablename__ = 'payment'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('ebook.id'), nullable=False)
+    purchase_date = db.Column(db.DateTime(timezone=True), default=get_time)
+    amount = db.Column(db.Float, nullable=False)

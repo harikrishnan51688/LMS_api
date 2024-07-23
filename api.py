@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from flask_restful import Resource, fields, marshal_with, marshal
-from models import Ebook, User, Section, BorrowBook, RequestBook, ReturnBook, Rating
+from models import Ebook, User, Section, BorrowBook, RequestBook, ReturnBook, Rating, Purchase
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 import jwt
@@ -904,3 +904,36 @@ class GrantBook(Resource):
                 return jsonify({'message': 'Book granted', 'status': 'success'})
         except:
             return jsonify({'message': 'Error while granting book', 'status': 'error'})
+
+class BookPurchase(Resource):
+    @is_user
+    def post(current_user, self):
+        data = request.get_json()
+        book_id = data.get('book_id')
+        amount = data.get('amount')
+        is_purchased = Purchase.query.filter_by(user_id=current_user.id, book_id=book_id).first()
+        if is_purchased:
+            return jsonify({'message': 'Book already purchased', 'status': 'warning'})
+        try:
+            book = Ebook.query.filter_by(id=book_id).first_or_404()
+            payment = Purchase(book_id=book.id, amount=amount, user_id=current_user.id)
+            db.session.add(payment)
+            db.session.commit()
+            return jsonify({'message': 'Book successfully purchased', 'status': 'success'})
+        except:
+            return jsonify({'message': 'Error while purchasing book', 'status': 'error'})
+
+class IsPurchased(Resource):
+    @is_user
+    def get(current_user, self):
+        book_id = request.args.get('book_id')
+        print(book_id)
+        user_id = current_user.id
+        try:
+            is_purchased = Purchase.query.filter_by(book_id=book_id, user_id=user_id).first()
+            if is_purchased:
+                return jsonify({'is_purchased': True})
+            return jsonify({'is_purchased': False})
+        except:
+            return jsonify({'message': 'Error fetching purchase data', 'status': 'error'})
+        
