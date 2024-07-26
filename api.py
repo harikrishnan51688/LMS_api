@@ -68,39 +68,24 @@ def get_time():
 class Chart_Sections(Resource):
     def get(self):
         data = Section.query.all()
-        # print([d.section_name for d in data])
-        # print([len(d.ebook) for d in data])
-        chart_data = {
-        'labels': [d.section_name for d in data],  # assuming 'id' is a suitable label
-        'datasets': [
-            {
-                'label': 'Books',
-                'data': [len(d.ebook) for d in data],  # replace 'your_field' with the actual field you want to display
-                'backgroundColor': ['rgba(65, 192, 12, 0.2)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)','rgba(154, 245, 140)'],
-                'borderWidth': 1,
-                # 'hoverBorderColor': "red",
-                'hoverBorderWidth': 2,
-                # 'hoverBackgroundColor': 'rgba(154, 245, 140)',
-                'pointHoverRadius': 5,
-                'borderColor': 'white',
-                'tension': 0.1,
-                'borderWidth': 2,
-            }
-          ]
+        label = [d.section_name for d in data]
+        dataset = [len(d.ebook) for d in data]
+        chartData = {
+            'labels': label,
+            'datasets': [{ 'data': dataset}]
         }
-        options = {
-            'scales': {
-                'y': {
-                    'beginAtZero': True
-                }
-            }
+        return jsonify({'chartData': chartData})
+    
+class PaymentChart(Resource):
+    def get(self):
+        data = db.session.query(func.date(Purchase.purchase_date).label('date'), func.count(Purchase.id).label('count')).group_by(func.date(Purchase.purchase_date)).limit(30)
+        labels = [str(row.date) for row in data]
+        dataset = [row.count for row in data]
+        chartData = {
+            'labels': labels,
+            'datasets': [{ 'label': 'No of book purchased per day','data': dataset}]
         }
-        response_data = {
-            'chart_data': chart_data,
-            'options': options
-        }
-
-        return jsonify(response_data)
+        return jsonify({'chartData': chartData})
 
 class UserJoinChart(Resource):
     def get(self):
@@ -127,7 +112,6 @@ class UserJoinChart(Resource):
                 }
             ]
         }
-
         options = {
             'scales': {
                 'xAxes': [{
@@ -152,12 +136,10 @@ class UserJoinChart(Resource):
                 }
             },
         }
-
         response_data = {
-            'chart_data': chart_data,
+            'chartData': chart_data,
             'options': options
         }
-
         return jsonify(response_data)
 
 

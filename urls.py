@@ -59,4 +59,5 @@ api.add_resource(RemoveBookFromSection, '/api/section/remove-book')
 # API for chart
 api.add_resource(Chart_Sections, '/api/chart/sections')
 api.add_resource(UserJoinChart, '/api/chart/users')
+api.add_resource(PaymentChart, '/api/chart/payment')
 # ---------------------------
