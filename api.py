@@ -927,7 +927,6 @@ class IsPurchased(Resource):
     @is_user
     def get(current_user, self):
         book_id = request.args.get('book_id')
-        print(book_id)
         user_id = current_user.id
         try:
             is_purchased = Purchase.query.filter_by(book_id=book_id, user_id=user_id).first()
@@ -936,4 +935,22 @@ class IsPurchased(Resource):
             return jsonify({'is_purchased': False})
         except:
             return jsonify({'message': 'Error fetching purchase data', 'status': 'error'})
-        
+
+class PurchaseData(Resource):
+    @is_admin
+    def get(current_user, self):
+        try:
+            purchases = Purchase.query.all()
+            data = []
+            for purchase in purchases:
+                p = {
+                    "id" : purchase.id,
+                    "username": purchase.user.name,
+                    "bookname": purchase.ebook.title,
+                    "purchase_date": purchase.purchase_date,
+                    "amount": purchase.amount
+                }
+                data.append(p)
+            return jsonify({'data':data})
+        except:
+            return jsonify({'message': 'Error fetching purchase data', 'status': 'error'})

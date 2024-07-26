@@ -33,6 +33,7 @@ api.add_resource(GrantBook, '/api/admin/grant-book')
 api.add_resource(Stats, '/api/admin/stats')
 api.add_resource(AllUsers, '/api/admin/allusers')
 api.add_resource(BookRequests, '/api/admin/book-requests')
+api.add_resource(PurchaseData, '/api/admin/book-purchases')
 
 # API for Books 
 api.add_resource(Ebook_, '/api/book/all')

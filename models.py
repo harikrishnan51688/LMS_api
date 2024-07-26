@@ -26,7 +26,7 @@ class User(UserMixin, db.Model):
     request_records = relationship('RequestBook', backref='user', cascade='all, delete-orphan', lazy='dynamic')
     borrow_records = relationship('BorrowBook', backref='user', cascade='all, delete-orphan', lazy='dynamic')
     return_records = relationship('ReturnBook', backref='user', cascade='all, delete-orphan', lazy='dynamic')
-    purchase_records = relationship('Purchase', backref='user', cascade='all, delete-orphan', lazy='dynamic')
+    purchase_records = relationship('Purchase', backref='user', lazy='dynamic')
     ratings = relationship('Rating', backref='user')
 
 class Role(db.Model):
@@ -58,6 +58,7 @@ class Ebook(db.Model):
     borrows_ = db.relationship('BorrowBook', backref='ebook', cascade='all, delete-orphan')
     returns_ = db.relationship('ReturnBook', backref='ebook', cascade='all, delete-orphan')
     ratings = db.relationship('Rating', backref='ebook', cascade='all, delete-orphan')
+    purchase_record = relationship('Purchase', backref='ebook')
 
     created_at = db.Column(db.DateTime(timezone=True), default=get_time)
     # updated_at = db.Column(db.DateTime(timezone=True), default=datetime.now().replace(microsecond=0))
@@ -81,7 +82,7 @@ class Ebook(db.Model):
         }
     
     def __repr__(self):
-        return f"{self.id}"
+        return f"{self.title}"
 
 class RequestBook(db.Model):
     __tablename__ = 'request_record'
