@@ -383,17 +383,17 @@ class Ebook_(Resource):
         return jsonify({"books": books_data, "basedOnRatings": bookwith_rating})
 
 class Login_(Resource):
-    def get(self):
-        auth = request.authorization
+    def post(self):
+        auth = request.json
 
-        if not auth or not auth.username or not auth.password:
+        if not auth or not auth.get('email') or not auth.get('password'):
             return jsonify("Could not verify!", 401, {'WWW-Authenticate' : 'Basic realm="Login Required"'})
         
-        user = User.query.filter_by(email=auth.username).first()
+        user = User.query.filter_by(email=auth.get('email')).first()
         if not user:
             return jsonify("Could not verify!", 401, {'WWW-Authenticate' : 'Basic realm="Login Required"'})
         
-        if check_password_hash(password=auth.password, pwhash=user.password):
+        if check_password_hash(password=auth.get('password'), pwhash=user.password):
             is_superuser = False
             if user.role_id == 1:
                 is_superuser = True
@@ -475,10 +475,21 @@ class Profile(Resource):
         if user_id and current_user.role_id == 1:
             current_user = User.query.filter_by(id=user_id).first()
 
+        # able to query using relationship without explicit joins but join is used 
+        # *book.ebook gives same result
         pending_requests = db.session.query(RequestBook, Ebook).join(Ebook, RequestBook.book_id == Ebook.id).filter(RequestBook.user_id == current_user.id).all()
         borrowed_books = db.session.query(BorrowBook, Ebook).join(Ebook, BorrowBook.book_id == Ebook.id).filter(BorrowBook.user_id == current_user.id).all()
         returned_books = db.session.query(ReturnBook, Ebook).join(Ebook, ReturnBook.book_id == Ebook.id).filter(ReturnBook.user_id == current_user.id).all()
+        purchased_books = db.session.query(Purchase).filter(Purchase.user_id == current_user.id).all()
 
+        pur_books = [{
+            "id": purchase.id,
+            "title": purchase.ebook.title,
+            "subtitle": purchase.ebook.subtitle,
+            "image": purchase.ebook.image,
+            "file": purchase.ebook.file
+        } for purchase in purchased_books]
+        
         p_dict = [{
         "request_id": req.request_id,
         "book_id": req.book_id,
@@ -545,7 +556,7 @@ class Profile(Resource):
                     db.session.delete(borrow)
                     db.session.commit()
     
-        return jsonify({'pending_requests': p_dict, 'borrowed_books': b_dict, 'returned_books': r_dict})
+        return jsonify({'pending_requests': p_dict, 'borrowed_books': b_dict, 'returned_books': r_dict, 'purchased_books': pur_books})
 
 class ReqBook(Resource):
     @is_user
