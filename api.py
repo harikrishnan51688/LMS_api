@@ -270,20 +270,24 @@ class Update_Ebook(Resource):
 
         # for pdf
         try:
+            timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
             pdf = request.files['file']
             filename = secure_filename(pdf.filename)
-            file_path_pdf = (os.path.join(app.root_path, 'static/uploads/pdf/', filename))
+            unique_filename_pdf = f"{filename}_{timestamp}.pdf"
+            file_path_pdf = (os.path.join(app.root_path, 'static/uploads/pdf/', unique_filename_pdf))
             pdf.save(file_path_pdf)    
-            book.file = f"uploads/pdf/{filename}"
+            book.file = f"uploads/pdf/{unique_filename_pdf}"
         except:
             None
         # for cover image
         try:
             image = request.files['image']
             imagename = secure_filename(image.filename)
-            file_path_image = (os.path.join(app.root_path, 'static/uploads/images/', imagename))
+            file_extension = os.path.splitext(image.filename)[1]
+            unique_filename_img = f"{imagename}_{timestamp}{file_extension}"
+            file_path_image = (os.path.join(app.root_path, 'static/uploads/images/', unique_filename_img))
             image.save(file_path_image)    
-            book.image = f"uploads/images/{imagename}"
+            book.image = f"uploads/images/{unique_filename_img}"
         except:
             None
         try:
@@ -301,18 +305,22 @@ class Create_Ebook(Resource):
         try:
             book = Ebook(owner_id=current_user.id, author=request.form.get('author'), title=request.form.get('title'), subtitle=request.form.get('subtitle'), pages=request.form.get('pages'), price=request.form.get('price'), genre=request.form.get('genre'))
             # for pdf
+            timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
             pdf = request.files['file']
             filename = secure_filename(pdf.filename)
-            file_path_pdf = (os.path.join(app.root_path, 'static/uploads/pdf/', filename))
+            unique_filename_pdf = f"{filename}_{timestamp}.pdf"
+            file_path_pdf = (os.path.join(app.root_path, 'static/uploads/pdf/', unique_filename_pdf))
             pdf.save(file_path_pdf)    
-            book.file = f"uploads/pdf/{filename}"
+            book.file = f"uploads/pdf/{unique_filename_pdf}"
 
             # for cover image
             image = request.files['image']
             imagename = secure_filename(image.filename)
-            file_path_image = (os.path.join(app.root_path, 'static/uploads/images/', imagename))
+            file_extension = os.path.splitext(image.filename)[1]
+            unique_filename_img = f"{imagename}_{timestamp}{file_extension}"
+            file_path_image = (os.path.join(app.root_path, 'static/uploads/images/', unique_filename_img))
             image.save(file_path_image)    
-            book.image = f"uploads/images/{imagename}"
+            book.image = f"uploads/images/{unique_filename_img}"
 
             db.session.add(book)
             db.session.commit()

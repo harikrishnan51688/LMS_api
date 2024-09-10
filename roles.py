@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash
 def setup_db():
     
     if not Role.query.first():
-        admin_role = Role(name='admin', description='superuser')
+        admin_role = Role(name='librarian', description='library admin')
         user_role = Role(name='user', description='general user')
         db.session.add_all([admin_role, user_role])
         db.session.commit()
